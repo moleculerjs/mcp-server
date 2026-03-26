@@ -236,107 +236,11 @@ export function McpServerMixin(
 						{
 							type: "text",
 							text: JSON.stringify(events, null, 2)
-							/*events
-									.map(
-										a =>
-											`Name: ${a.name}, Group: ${a.group || "<no group>"}, Available: ${a.available}`
-									)
-									.join("\n") || "No events found"*/
 						}
 					]
 				};
 			}
 		);
-
-		/*server.registerTool(
-			"moleculer_call_action_greeter_hello",
-			{
-				title: "Call greeter.hello Action",
-				description: "Call the greeter.hello Moleculer action",
-				inputSchema: {
-					// No parameters for this action
-				},
-				annotations: {
-					readOnlyHint: true,
-					destructiveHint: false,
-					idempotentHint: true,
-					openWorldHint: false
-				}
-			},
-			async params => {
-				logger.info("Calling greeter.hello action...", params);
-				try {
-					const result = await broker.call("greeter.hello");
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(result, null, 2)
-							}
-						]
-					};
-				} catch (err) {
-					logger.error("Error calling greeter.hello action:", err);
-					return {
-						content: [
-							{
-								type: "text",
-								text:
-									`Error ${err.name}: ${err.message}` +
-									JSON.stringify(err, null, 2)
-							}
-						]
-					};
-				}
-			}
-		);
-
-		server.registerTool(
-			"moleculer_call_action_greeter_welcome",
-			{
-				title: "Call greeter.welcome Action",
-				description: "Call the greeter.welcome Moleculer action",
-				inputSchema: {
-					name: z.string().describe("Name of the person to welcome")
-				},
-				annotations: {
-					readOnlyHint: false,
-					destructiveHint: false,
-					idempotentHint: false,
-					openWorldHint: false
-				}
-			},
-			async params => {
-				logger.info("Calling greeter.welcome action...", params);
-				if (!params.name) {
-					throw new Error("name parameter is required");
-				}
-				try {
-					const result = await broker.call("greeter.welcome", { name: params.name });
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(result, null, 2)
-							}
-						]
-					};
-				} catch (err) {
-					logger.error("Error calling greeter.welcome action:", err);
-					return {
-						content: [
-							{
-								type: "text",
-								text:
-									`Error ${err.name}: ${err.message}` +
-									JSON.stringify(err, null, 2)
-							}
-						]
-					};
-				}
-			}
-		);
-		*/
 
 		server.registerTool(
 			"moleculer_call_action",
@@ -533,7 +437,7 @@ export function McpServerMixin(
 								// Invalid request - no session ID or not initialization request
 								this.logger.warn("Invalid MCP request:", req.headers);
 								res.statusCode = 400;
-								await this.sendResponse(req, res, 400, {
+								await this.sendResponse(req, res, {
 									jsonrpc: "2.0",
 									error: {
 										code: -32000,
