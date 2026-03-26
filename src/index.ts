@@ -16,10 +16,10 @@ import type { ApiRouteSchema, ApiSettingsSchema } from "moleculer-web";
 import _ from "lodash";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import type { McpServerMixinOptions } from "./types.js";
+import { registerAutoDiscoveryTools } from "./tool-generator.js";
 
-export interface McpServerMixinOptions {
-	routeOptions?: ApiRouteSchema;
-}
+export type { McpServerMixinOptions } from "./types.js";
 
 export function McpServerMixin(
 	mixinOptions?: McpServerMixinOptions
@@ -27,7 +27,9 @@ export function McpServerMixin(
 	mixinOptions = _.defaultsDeep(mixinOptions, {
 		routeOptions: {
 			path: "/mcp"
-		}
+		},
+		exposeBrokerTools: true,
+		toolNamePrefix: ""
 	});
 
 	function createServer(broker: ServiceBroker) {
@@ -46,6 +48,13 @@ export function McpServerMixin(
 				}
 			}
 		);
+
+		// Auto-discovery: register per-action tools
+		registerAutoDiscoveryTools(server, broker, mixinOptions!);
+
+		if (mixinOptions!.exposeBrokerTools === false) {
+			return server;
+		}
 
 		server.registerTool(
 			"moleculer_list_nodes",
