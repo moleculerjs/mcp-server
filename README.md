@@ -75,7 +75,7 @@ export default {
 This automatically generates an MCP tool:
 - **Name:** `weather_forecast`
 - **Description:** `"Get weather forecast for a city"`
-- **Input schema:** `{ city: z.string(), days: z.number().default(3).optional() }`
+- **Input schema:** `{ city: z.string(), days: z.number().default(3) }`
 - **Annotations:** `{ readOnlyHint: true, idempotentHint: true, destructiveHint: false, openWorldHint: false }` (auto-detected from `GET`)
 
 Tool names are derived from the action name by replacing dots with underscores: `service.action` → `service_action`.
