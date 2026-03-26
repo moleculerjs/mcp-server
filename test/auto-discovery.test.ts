@@ -236,6 +236,35 @@ describe("Auto-discovery Integration Tests", () => {
 		});
 	});
 
+	describe("$node.* internal actions filtering", () => {
+		it("should not include $node.* internal actions in auto-discovered tools", async () => {
+			broker = createBroker();
+			apiService = broker.createService({
+				name: "api",
+				mixins: [ApiGateway, McpServerMixin()],
+				settings: { port: 0, routes: [] }
+			});
+			broker.createService({
+				name: "weather",
+				actions: { forecast: { handler() { return "sunny"; } } }
+			});
+			await broker.start();
+
+			const mcpClient = await createMcpClient(getServerUrl(apiService));
+			try {
+				const tools = await listTools(mcpClient);
+				const toolNames = tools.map((t: Tool) => t.name);
+				// $node.* internal actions should be filtered out
+				const nodeTools = toolNames.filter((name: string) => name.startsWith("$node") || name.startsWith("_node"));
+				expect(nodeTools).toHaveLength(0);
+				// Regular actions should still be present
+				expect(toolNames).toContain("weather_forecast");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+	});
+
 	describe("excludeActions", () => {
 		it("should exclude actions matching glob patterns", async () => {
 			broker = createBroker();
