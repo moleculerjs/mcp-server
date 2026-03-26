@@ -42,61 +42,10 @@ export function McpServerMixin(
 			},
 			{
 				capabilities: {
-					//resources: {},
 					tools: {}
-					//prompts: {}
 				}
 			}
 		);
-		/*
-		server.resource(
-			"actions",
-			"moleculer://actions",
-			{
-				description: "Get all Moleculer actions",
-				title: "Moleculer Actions",
-				mimeType: "application/json"
-			},
-			async uri => {
-				logger.info("Fetching Moleculer actions...", uri);
-				return {
-					contents: [
-						{
-							uri: uri.href,
-							mimeType: "application/json",
-							text: JSON.stringify([{ name: "greeter.hello" }])
-						}
-					]
-				};
-			}
-		);
-
-		server.resource(
-			"action-details",
-			new ResourceTemplate("moleculer://actions/{actionName}", {
-				list: undefined
-			}),
-			{
-				description: "Get details of a specific Moleculer action",
-				title: "Moleculer Action Details",
-				mimeType: "application/json"
-			},
-			async (uri, params: { actionName: string }) => {
-				logger.info("Fetching Moleculer action details...", uri);
-				return {
-					contents: [
-						{
-							uri: uri.href,
-							mimeType: "application/json",
-							text: JSON.stringify({
-								name: params.actionName,
-								params: { name: { type: "string" } }
-							})
-						}
-					]
-				};
-			}
-		);*/
 
 		server.registerTool(
 			"moleculer_list_nodes",
@@ -133,12 +82,6 @@ export function McpServerMixin(
 						{
 							type: "text",
 							text: JSON.stringify(nodes, null, 2)
-							/*	nodes
-									.map(
-										a =>
-											`NodeID: ${a.id}, Hostname: ${a.hostname}, Available: ${a.available}, Local: ${a.local}`
-									)
-									.join("\n") || "No nodes found" */
 						}
 					]
 				};
@@ -197,12 +140,6 @@ export function McpServerMixin(
 						{
 							type: "text",
 							text: JSON.stringify(services, null, 2)
-							/* services
-									.map(
-										a =>
-											`Name: ${a.fullName}, Version: ${a.version || "<no version>"}, Available: ${a.available}`
-									)
-									.join("\n") || "No services found" */
 						}
 					]
 				};
@@ -251,9 +188,6 @@ export function McpServerMixin(
 						{
 							type: "text",
 							text: JSON.stringify(actions, null, 2)
-							/*actions
-									.map(a => `Name: ${a.name}, Available: ${a.available}`)
-									.join("\n") || "No actions found"*/
 						}
 					]
 				};
@@ -717,10 +651,10 @@ export function McpServerMixin(
 			this.logger.info("Shutting down server...");
 
 			// Close all active transports to properly clean up resources
-			for (const sessionId in this.transports) {
+			for (const [sessionId, transport] of this.transports) {
 				try {
 					this.logger.info(`Closing transport for session ${sessionId}`);
-					await this.transports.get(sessionId)!.close();
+					await transport.close();
 					this.transports.delete(sessionId);
 				} catch (error) {
 					this.logger.error(`Error closing transport for session ${sessionId}:`, error);
