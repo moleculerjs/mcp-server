@@ -55,7 +55,12 @@ function buildString(def: Record<string, any>): ZodTypeAny {
 	if (def.min != null) s = s.min(def.min);
 	if (def.max != null) s = s.max(def.max);
 	if (def.pattern) s = s.regex(new RegExp(def.pattern));
-	if (def.enum) return z.enum(def.enum);
+	if (def.enum != null && Array.isArray(def.enum) && def.enum.length > 0) {
+		const allStrings = def.enum.every((v: unknown) => typeof v === "string");
+		if (allStrings) return z.enum(def.enum as [string, ...string[]]);
+		const literals = def.enum.map((v: string | number | boolean) => z.literal(v));
+		return z.union(literals as unknown as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]]);
+	}
 	if (def.email === true) return z.string().email();
 	if (def.url === true) return z.string().url();
 	return s;
@@ -88,8 +93,11 @@ function buildObject(def: Record<string, any>): ZodTypeAny {
 }
 
 function buildEnum(def: Record<string, any>): ZodTypeAny {
-	if (def.values && def.values.length > 0) {
-		return z.enum(def.values);
+	if (Array.isArray(def.values) && def.values.length > 0) {
+		const allStrings = def.values.every((v: unknown) => typeof v === "string");
+		if (allStrings) return z.enum(def.values as [string, ...string[]]);
+		const literals = def.values.map((v: string | number | boolean) => z.literal(v));
+		return z.union(literals as unknown as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]]);
 	}
 	return z.any();
 }

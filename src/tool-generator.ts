@@ -1,7 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import Moleculer from "moleculer";
 import type { ServiceBroker } from "moleculer";
 import type { McpServerMixinOptions } from "./types.js";
 import { convertActionParamsToZod } from "./schema-converter.js";
+
+const { match } = Moleculer.Utils;
 
 interface ActionEntry {
 	name: string;
@@ -17,16 +20,6 @@ interface ActionEntry {
 		};
 		[key: string]: any;
 	};
-}
-
-function matchGlob(pattern: string, value: string): boolean {
-	if (pattern.endsWith(".*")) {
-		return value.startsWith(pattern.slice(0, -1));
-	}
-	if (pattern.endsWith("*")) {
-		return value.startsWith(pattern.slice(0, -1));
-	}
-	return pattern === value;
 }
 
 function getRestMethod(rest: any): string | null {
@@ -84,16 +77,16 @@ function shouldIncludeAction(
 	// Check services filter
 	if (options.services) {
 		if (typeof options.services === "string") {
-			if (!matchGlob(options.services, serviceName)) return false;
+			if (!match(serviceName, options.services)) return false;
 		} else if (Array.isArray(options.services)) {
-			if (!options.services.some(s => matchGlob(s, serviceName))) return false;
+			if (!options.services.some(s => match(serviceName, s))) return false;
 		}
 	}
 
 	// Check excludeActions
 	if (options.excludeActions) {
 		for (const pattern of options.excludeActions) {
-			if (matchGlob(pattern, actionName)) return false;
+			if (match(actionName, pattern)) return false;
 		}
 	}
 
@@ -132,9 +125,12 @@ export function registerAutoDiscoveryTools(
 		// Input schema
 		const inputSchema = convertActionParamsToZod(actionDef.params);
 
-		// Annotations
-		const restMethod = getRestMethod(actionDef.rest);
-		const annotations = mcpMeta.annotations || detectAnnotations(restMethod);
+		// Annotations: merge auto-detected with explicit overrides
+		const detectedAnnotations = detectAnnotations(getRestMethod(actionDef.rest));
+		const annotations = {
+			...detectedAnnotations,
+			...(mcpMeta.annotations || {})
+		};
 
 		server.registerTool(
 			toolName,
@@ -151,17 +147,20 @@ export function registerAutoDiscoveryTools(
 						content: [
 							{
 								type: "text" as const,
-								text: JSON.stringify(result, null, 2)
+								text: result === undefined ? "null" : JSON.stringify(result, null, 2)
 							}
 						]
 					};
 				} catch (err: any) {
 					logger.error(`Error calling action ${actionName}:`, err);
+					const errorInfo = err instanceof Error
+						? { name: err.name, message: err.message, stack: err.stack }
+						: { message: String(err) };
 					return {
 						content: [
 							{
 								type: "text" as const,
-								text: `Error ${err.name}: ${err.message}\n${JSON.stringify(err, null, 2)}`
+								text: `Error ${errorInfo.name || "UnknownError"}: ${errorInfo.message}\n${JSON.stringify(errorInfo, null, 2)}`
 							}
 						]
 					};

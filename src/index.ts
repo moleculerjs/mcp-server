@@ -19,7 +19,7 @@ import { z } from "zod";
 import type { McpServerMixinOptions } from "./types.js";
 import { registerAutoDiscoveryTools } from "./tool-generator.js";
 
-export type { McpServerMixinOptions } from "./types.js";
+export type { McpServerMixinOptions };
 
 export function McpServerMixin(
 	mixinOptions?: McpServerMixinOptions
@@ -79,10 +79,7 @@ export function McpServerMixin(
 			},
 			async params => {
 				logger.info("Listing Moleculer nodes...", params);
-				const nodes = broker.registry.getNodeList({
-					withServices: false,
-					onlyAvailable: false
-				});
+				const nodes = broker.registry.getNodeList(params);
 				return {
 					content: [
 						{

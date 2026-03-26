@@ -610,7 +610,7 @@ describe("MCP Server Integration Tests", () => {
 
 			// Verify that getNodeList was called with correct parameters (including defaults)
 			expect(getNodeListSpy).toHaveBeenCalledWith({
-				onlyAvailable: false, // default value in the schema
+				onlyAvailable: true,
 				withServices: false
 			});
 
