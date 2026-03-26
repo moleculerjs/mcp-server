@@ -487,10 +487,9 @@ describe("Auto-discovery Integration Tests", () => {
 				expect(toolNames).not.toContain("moleculer_list_services");
 				expect(toolNames).not.toContain("moleculer_list_actions");
 				expect(toolNames).not.toContain("moleculer_list_events");
-				// call_action and emit_event are NOT part of broker tools in this context
-				// They are also hidden because exposeBrokerTools: false skips ALL broker tools
-				expect(toolNames).not.toContain("moleculer_call_action");
-				expect(toolNames).not.toContain("moleculer_emit_event");
+				// call_action and emit_event are always registered (fallback tools)
+				expect(toolNames).toContain("moleculer_call_action");
+				expect(toolNames).toContain("moleculer_emit_event");
 				// Auto-discovered tools should still be there
 				expect(toolNames).toContain("weather_forecast");
 			} finally {

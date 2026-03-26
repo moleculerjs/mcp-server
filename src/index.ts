@@ -52,10 +52,7 @@ export function McpServerMixin(
 		// Auto-discovery: register per-action tools
 		registerAutoDiscoveryTools(server, broker, mixinOptions!);
 
-		if (mixinOptions!.exposeBrokerTools === false) {
-			return server;
-		}
-
+		if (mixinOptions!.exposeBrokerTools !== false) {
 		server.registerTool(
 			"moleculer_list_nodes",
 			{
@@ -250,6 +247,7 @@ export function McpServerMixin(
 				};
 			}
 		);
+		} // end exposeBrokerTools
 
 		server.registerTool(
 			"moleculer_call_action",
