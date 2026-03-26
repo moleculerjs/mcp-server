@@ -444,7 +444,7 @@ export function McpServerMixin(
 										message: "Bad Request: No valid session ID provided"
 									},
 									id: req?.body?.id
-								});
+								}, {});
 								return;
 							}
 
@@ -462,7 +462,7 @@ export function McpServerMixin(
 										message: "Internal server error"
 									},
 									id: req?.body?.id
-								});
+								}, {});
 								return;
 							}
 						}
@@ -480,7 +480,7 @@ export function McpServerMixin(
 									message: "Bad Request: No valid session ID provided"
 								},
 								id: req?.body?.id
-							});
+							}, {});
 							return;
 						}
 
@@ -511,7 +511,7 @@ export function McpServerMixin(
 									message: "Bad Request: No valid session ID provided"
 								},
 								id: req?.body?.id
-							});
+							}, {});
 							return;
 						}
 
@@ -533,7 +533,7 @@ export function McpServerMixin(
 										message: "Error handling session termination"
 									},
 									id: req?.body?.id
-								});
+								}, {});
 								return;
 							}
 						}
