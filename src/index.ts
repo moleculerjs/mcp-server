@@ -403,10 +403,10 @@ export function McpServerMixin(
 							if (sessionId && this.transports.has(sessionId)) {
 								// Reuse existing transport
 								transport = this.transports.get(sessionId)!;
-							} else if (!sessionId) {
+							} else {
 								const { server } = createServer(this.broker);
 
-								// New initialization request
+								// New initialization request (no session ID or unknown session ID)
 								const eventStore = new InMemoryEventStore();
 								transport = new StreamableHTTPServerTransport({
 									sessionIdGenerator: () => randomUUID(),
@@ -439,24 +439,6 @@ export function McpServerMixin(
 								await transport.handleRequest(req, res);
 
 								return; // Already handled
-							} else {
-								// Invalid request - no session ID or not initialization request
-								this.logger.warn("Invalid MCP request:", req.headers);
-								res.statusCode = 400;
-								await this.sendResponse(
-									req,
-									res,
-									{
-										jsonrpc: "2.0",
-										error: {
-											code: -32000,
-											message: "Bad Request: No valid session ID provided"
-										},
-										id: req?.body?.id
-									},
-									{}
-								);
-								return;
 							}
 
 							// Handle the request with existing transport - no need to reconnect
