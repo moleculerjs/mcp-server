@@ -18,6 +18,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { McpServerMixinOptions } from "./types.js";
 import { registerAutoDiscoveryTools } from "./tool-generator.js";
+import "./moleculer-types.js";
 
 export type { McpServerMixinOptions };
 

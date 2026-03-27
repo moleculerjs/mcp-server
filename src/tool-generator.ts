@@ -1,27 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import Moleculer from "moleculer";
-import type { ServiceBroker } from "moleculer";
+import type { ActionSchema, ServiceBroker } from "moleculer";
 import type { McpServerMixinOptions } from "./types.js";
 import { convertActionParamsToZod } from "./schema-converter.js";
+import "./moleculer-types.js";
 
 const { match } = Moleculer.Utils;
 
 interface ActionEntry {
 	name: string;
-	action?: {
-		description?: string;
-		params?: unknown;
-		rest?: unknown;
-		mcp?:
-			| boolean
-			| {
-					enabled?: boolean;
-					name?: string;
-					description?: string;
-					annotations?: Record<string, boolean>;
-			  };
-		[key: string]: unknown;
-	};
+	action?: ActionSchema;
 }
 
 function getRestMethod(rest: unknown): string | null {

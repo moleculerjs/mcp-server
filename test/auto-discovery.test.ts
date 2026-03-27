@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { ServiceBroker } from "moleculer";
 import ApiGateway from "moleculer-web";
 import { McpServerMixin } from "../src/index.js";
+import "../src/moleculer-types.js";
 import { createMcpClient, closeMcpClient, listTools, callTool } from "./mcp-client.js";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { Server } from "http";
