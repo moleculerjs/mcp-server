@@ -573,6 +573,13 @@ export function McpServerMixin(
 
 				mappingPolicy: "restrict",
 
+				cors: {
+					origin: "*",
+					methods: ["GET", "POST", "DELETE", "OPTIONS"],
+					allowedHeaders: ["Content-Type", "mcp-session-id", "Last-Event-ID"],
+					exposedHeaders: ["mcp-session-id"]
+				},
+
 				bodyParsers: {
 					json: false // The mcp server will read the raw body itself
 				}
