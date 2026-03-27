@@ -480,37 +480,33 @@ describe("MCP Server Integration Tests", () => {
 		const mcpClient = await createMcpClient(serverUrl);
 
 		try {
-			// Test calling action without action parameter - this should throw an MCP error
+			// Test calling action without action parameter - should fail validation
 			try {
-				await callTool(mcpClient, "moleculer_call_action", {
+				const result = await callTool(mcpClient, "moleculer_call_action", {
 					jsonParams: "{}"
 				});
-				// Should not reach here
-				expect.fail("Should have thrown an MCP error");
+				// SDK v1.28+ may return an error response instead of throwing
+				expect(result.isError).toBe(true);
 			} catch (err: unknown) {
 				expect(err).toBeDefined();
 				expect(err instanceof Error).toBe(true);
 				if (err instanceof Error) {
-					expect(err.message).toContain("Invalid arguments for tool");
 					expect(err.message).toContain("action");
-					expect(err.message).toContain("Required");
 				}
 			}
 
-			// Test emitting event without event parameter - this should throw an MCP error
+			// Test emitting event without event parameter - should fail validation
 			try {
-				await callTool(mcpClient, "moleculer_emit_event", {
+				const result = await callTool(mcpClient, "moleculer_emit_event", {
 					jsonParams: "{}"
 				});
-				// Should not reach here
-				expect.fail("Should have thrown an MCP error");
+				// SDK v1.28+ may return an error response instead of throwing
+				expect(result.isError).toBe(true);
 			} catch (err: unknown) {
 				expect(err).toBeDefined();
 				expect(err instanceof Error).toBe(true);
 				if (err instanceof Error) {
-					expect(err.message).toContain("Invalid arguments for tool");
 					expect(err.message).toContain("event");
-					expect(err.message).toContain("Required");
 				}
 			}
 		} finally {

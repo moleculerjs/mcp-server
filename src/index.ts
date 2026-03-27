@@ -279,7 +279,8 @@ export function McpServerMixin(
 						actionParams = JSON.parse(params.jsonParams);
 					} catch (err) {
 						throw new Error(
-							"The 'jsonParams' must be a valid JSON object string: " + err.message
+							"The 'jsonParams' must be a valid JSON object string: " + err.message,
+							{ cause: err }
 						);
 					}
 				}
@@ -348,7 +349,8 @@ export function McpServerMixin(
 						eventParams = JSON.parse(params.jsonParams);
 					} catch (err) {
 						throw new Error(
-							"The 'jsonParams' must be a valid JSON object string: " + err.message
+							"The 'jsonParams' must be a valid JSON object string: " + err.message,
+							{ cause: err }
 						);
 					}
 				}
