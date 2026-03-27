@@ -189,8 +189,8 @@ describe("Auto-discovery Integration Tests", () => {
 				expect(tool!.inputSchema).toBeDefined();
 				expect(tool!.inputSchema.properties).toHaveProperty("city");
 				expect(tool!.inputSchema.properties).toHaveProperty("days");
-				expect(tool!.inputSchema.properties.city.type).toBe("string");
-				expect(tool!.inputSchema.properties.days.type).toBe("number");
+				expect(tool!.inputSchema.properties!.city.type).toBe("string");
+				expect(tool!.inputSchema.properties!.days.type).toBe("number");
 			} finally {
 				await closeMcpClient(mcpClient);
 			}
