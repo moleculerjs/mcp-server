@@ -31,3 +31,5 @@ All notable changes to this project will be documented in this file.
 - **Error serialization losing details** — Error responses now explicitly extract `name`, `message`, and `stack` properties instead of relying on `JSON.stringify(err)` which loses non-enumerable fields.
 - **MCP annotations merge** — Detected annotations and user-defined `mcp.annotations` are now properly spread-merged instead of one overwriting the other.
 - **Internal `$node.*` actions filtered** — Auto-discovery automatically excludes internal Moleculer actions (starting with `$`) to avoid exposing infrastructure tools to LLMs.
+- **CORS support for MCP Inspector** — Added CORS configuration to the route, allowing the MCP Inspector and other browser-based clients to connect cross-origin. Allowed headers include `mcp-session-id`, `mcp-protocol-version`, and `Last-Event-ID`.
+- **Unknown session ID handling** — POST requests with an unknown `mcp-session-id` now create a new session instead of returning 400. This fixes reconnection issues with MCP SDK v1.28+ clients.
