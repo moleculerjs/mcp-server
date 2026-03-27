@@ -576,7 +576,12 @@ export function McpServerMixin(
 				cors: {
 					origin: "*",
 					methods: ["GET", "POST", "DELETE", "OPTIONS"],
-					allowedHeaders: ["Content-Type", "mcp-session-id", "Last-Event-ID"],
+					allowedHeaders: [
+						"Content-Type",
+						"mcp-session-id",
+						"mcp-protocol-version",
+						"Last-Event-ID"
+					],
 					exposedHeaders: ["mcp-session-id"]
 				},
 
