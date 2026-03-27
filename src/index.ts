@@ -12,7 +12,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js";
 import { ServiceBroker, ServiceSchema } from "moleculer";
-import type { ApiRouteSchema, ApiSettingsSchema } from "moleculer-web";
+import type { ApiSettingsSchema } from "moleculer-web";
 import _ from "lodash";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -53,197 +53,197 @@ export function McpServerMixin(
 		registerAutoDiscoveryTools(server, broker, mixinOptions!);
 
 		if (mixinOptions!.exposeBrokerTools !== false) {
-		server.registerTool(
-			"moleculer_list_nodes",
-			{
-				title: "List Moleculer nodes",
-				description: "List all Moleculer nodes",
-				inputSchema: {
-					onlyAvailable: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only available (online) nodes"),
-					withServices: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Include service schemas")
+			server.registerTool(
+				"moleculer_list_nodes",
+				{
+					title: "List Moleculer nodes",
+					description: "List all Moleculer nodes",
+					inputSchema: {
+						onlyAvailable: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only available (online) nodes"),
+						withServices: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Include service schemas")
+					},
+					annotations: {
+						readOnlyHint: true,
+						destructiveHint: false,
+						idempotentHint: true,
+						openWorldHint: false
+					}
 				},
-				annotations: {
-					readOnlyHint: true,
-					destructiveHint: false,
-					idempotentHint: true,
-					openWorldHint: false
+				async params => {
+					logger.info("Listing Moleculer nodes...", params);
+					const nodes = broker.registry.getNodeList(params);
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(nodes, null, 2)
+							}
+						]
+					};
 				}
-			},
-			async params => {
-				logger.info("Listing Moleculer nodes...", params);
-				const nodes = broker.registry.getNodeList(params);
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(nodes, null, 2)
-						}
-					]
-				};
-			}
-		);
+			);
 
-		server.registerTool(
-			"moleculer_list_services",
-			{
-				title: "List Moleculer services",
-				description: "List all Moleculer services",
-				inputSchema: {
-					onlyLocal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only local node services"),
-					onlyAvailable: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only available (online) services"),
-					skipInternal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Skip internal services (prefixed with '$')"),
-					withActions: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Include service actions definitions"),
-					withEvents: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Include service events definitions"),
-					grouping: z
-						.boolean()
-						.optional()
-						.default(true)
-						.describe("Group services by name and version")
+			server.registerTool(
+				"moleculer_list_services",
+				{
+					title: "List Moleculer services",
+					description: "List all Moleculer services",
+					inputSchema: {
+						onlyLocal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only local node services"),
+						onlyAvailable: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only available (online) services"),
+						skipInternal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Skip internal services (prefixed with '$')"),
+						withActions: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Include service actions definitions"),
+						withEvents: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Include service events definitions"),
+						grouping: z
+							.boolean()
+							.optional()
+							.default(true)
+							.describe("Group services by name and version")
+					},
+					annotations: {
+						readOnlyHint: true,
+						destructiveHint: false,
+						idempotentHint: true,
+						openWorldHint: false
+					}
 				},
-				annotations: {
-					readOnlyHint: true,
-					destructiveHint: false,
-					idempotentHint: true,
-					openWorldHint: false
+				async params => {
+					logger.info("Listing Moleculer services...", params);
+					const services = broker.registry.getServiceList(params);
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(services, null, 2)
+							}
+						]
+					};
 				}
-			},
-			async params => {
-				logger.info("Listing Moleculer services...", params);
-				const services = broker.registry.getServiceList(params);
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(services, null, 2)
-						}
-					]
-				};
-			}
-		);
+			);
 
-		server.registerTool(
-			"moleculer_list_actions",
-			{
-				title: "List Moleculer actions",
-				description: "List all Moleculer actions",
-				inputSchema: {
-					onlyLocal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only local node actions"),
-					onlyAvailable: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only available (online) actions"),
-					skipInternal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Skip internal actions (prefixed with '$')"),
-					withEndpoints: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Include node endpoint information of actions")
+			server.registerTool(
+				"moleculer_list_actions",
+				{
+					title: "List Moleculer actions",
+					description: "List all Moleculer actions",
+					inputSchema: {
+						onlyLocal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only local node actions"),
+						onlyAvailable: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only available (online) actions"),
+						skipInternal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Skip internal actions (prefixed with '$')"),
+						withEndpoints: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Include node endpoint information of actions")
+					},
+					annotations: {
+						readOnlyHint: true,
+						destructiveHint: false,
+						idempotentHint: true,
+						openWorldHint: false
+					}
 				},
-				annotations: {
-					readOnlyHint: true,
-					destructiveHint: false,
-					idempotentHint: true,
-					openWorldHint: false
+				async params => {
+					logger.info("Listing Moleculer actions...", params);
+					const actions = broker.registry.getActionList(params);
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(actions, null, 2)
+							}
+						]
+					};
 				}
-			},
-			async params => {
-				logger.info("Listing Moleculer actions...", params);
-				const actions = broker.registry.getActionList(params);
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(actions, null, 2)
-						}
-					]
-				};
-			}
-		);
+			);
 
-		server.registerTool(
-			"moleculer_list_events",
-			{
-				title: "List Moleculer events",
-				description: "List all Moleculer events",
-				inputSchema: {
-					onlyLocal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only local node events"),
-					onlyAvailable: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("List only available (online) events"),
-					skipInternal: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Skip internal events (prefixed with '$')"),
-					withEndpoints: z
-						.boolean()
-						.optional()
-						.default(false)
-						.describe("Include node endpoint information of event listeners")
+			server.registerTool(
+				"moleculer_list_events",
+				{
+					title: "List Moleculer events",
+					description: "List all Moleculer events",
+					inputSchema: {
+						onlyLocal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only local node events"),
+						onlyAvailable: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("List only available (online) events"),
+						skipInternal: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Skip internal events (prefixed with '$')"),
+						withEndpoints: z
+							.boolean()
+							.optional()
+							.default(false)
+							.describe("Include node endpoint information of event listeners")
+					},
+					annotations: {
+						readOnlyHint: true,
+						destructiveHint: false,
+						idempotentHint: true,
+						openWorldHint: false
+					}
 				},
-				annotations: {
-					readOnlyHint: true,
-					destructiveHint: false,
-					idempotentHint: true,
-					openWorldHint: false
+				async params => {
+					logger.info("Listing Moleculer events...", params);
+					const events = broker.registry.getEventList(params);
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(events, null, 2)
+							}
+						]
+					};
 				}
-			},
-			async params => {
-				logger.info("Listing Moleculer events...", params);
-				const events = broker.registry.getEventList(params);
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(events, null, 2)
-						}
-					]
-				};
-			}
-		);
+			);
 		} // end exposeBrokerTools
 
 		server.registerTool(
@@ -441,14 +441,19 @@ export function McpServerMixin(
 								// Invalid request - no session ID or not initialization request
 								this.logger.warn("Invalid MCP request:", req.headers);
 								res.statusCode = 400;
-								await this.sendResponse(req, res, {
-									jsonrpc: "2.0",
-									error: {
-										code: -32000,
-										message: "Bad Request: No valid session ID provided"
+								await this.sendResponse(
+									req,
+									res,
+									{
+										jsonrpc: "2.0",
+										error: {
+											code: -32000,
+											message: "Bad Request: No valid session ID provided"
+										},
+										id: req?.body?.id
 									},
-									id: req?.body?.id
-								}, {});
+									{}
+								);
 								return;
 							}
 
@@ -459,14 +464,19 @@ export function McpServerMixin(
 							this.logger.error("Error handling MCP request:", error);
 							if (!res.headersSent) {
 								res.statusCode = 500;
-								await this.sendResponse(req, res, {
-									jsonrpc: "2.0",
-									error: {
-										code: -32603,
-										message: "Internal server error"
+								await this.sendResponse(
+									req,
+									res,
+									{
+										jsonrpc: "2.0",
+										error: {
+											code: -32603,
+											message: "Internal server error"
+										},
+										id: req?.body?.id
 									},
-									id: req?.body?.id
-								}, {});
+									{}
+								);
 								return;
 							}
 						}
@@ -477,14 +487,19 @@ export function McpServerMixin(
 						const sessionId = req.headers["mcp-session-id"] as string | undefined;
 						if (!sessionId || !this.transports.has(sessionId)) {
 							res.statusCode = 400;
-							await this.sendResponse(req, res, {
-								jsonrpc: "2.0",
-								error: {
-									code: -32000,
-									message: "Bad Request: No valid session ID provided"
+							await this.sendResponse(
+								req,
+								res,
+								{
+									jsonrpc: "2.0",
+									error: {
+										code: -32000,
+										message: "Bad Request: No valid session ID provided"
+									},
+									id: req?.body?.id
 								},
-								id: req?.body?.id
-							}, {});
+								{}
+							);
 							return;
 						}
 
@@ -508,14 +523,19 @@ export function McpServerMixin(
 						const sessionId = req.headers["mcp-session-id"] as string | undefined;
 						if (!sessionId || !this.transports.has(sessionId)) {
 							res.statusCode = 400;
-							await this.sendResponse(req, res, {
-								jsonrpc: "2.0",
-								error: {
-									code: -32000,
-									message: "Bad Request: No valid session ID provided"
+							await this.sendResponse(
+								req,
+								res,
+								{
+									jsonrpc: "2.0",
+									error: {
+										code: -32000,
+										message: "Bad Request: No valid session ID provided"
+									},
+									id: req?.body?.id
 								},
-								id: req?.body?.id
-							}, {});
+								{}
+							);
 							return;
 						}
 
@@ -530,14 +550,19 @@ export function McpServerMixin(
 							this.logger.error("Error handling session termination:", error);
 							if (!res.headersSent) {
 								res.statusCode = 500;
-								await this.sendResponse(req, res, {
-									jsonrpc: "2.0",
-									error: {
-										code: -32603,
-										message: "Error handling session termination"
+								await this.sendResponse(
+									req,
+									res,
+									{
+										jsonrpc: "2.0",
+										error: {
+											code: -32603,
+											message: "Error handling session termination"
+										},
+										id: req?.body?.id
 									},
-									id: req?.body?.id
-								}, {});
+									{}
+								);
 								return;
 							}
 						}

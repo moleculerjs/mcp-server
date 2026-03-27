@@ -29,6 +29,7 @@
 		"deps": "ncu -i && npm audit fix",
 		"ci-update-deps": "ncu -u",
 		"lint": "eslint --ext=.ts src examples test",
+		"lint:fix": "eslint --ext=.ts src examples test --fix",
 		"check": "tsc --noEmit true",
 		"prebuild": "rimraf dist",
 		"build": "tsc -b tsconfig.cjs.json tsconfig.esm.json tsconfig.types.json",

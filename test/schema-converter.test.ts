@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { z } from "zod";
 import { convertFastestValidatorToZod, convertActionParamsToZod } from "../src/schema-converter";
 
 describe("convertFastestValidatorToZod", () => {

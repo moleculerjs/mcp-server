@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { ServiceBroker, Service } from "moleculer";
+import { describe, it, expect, afterEach } from "vitest";
+import { ServiceBroker } from "moleculer";
 import ApiGateway from "moleculer-web";
 import { McpServerMixin } from "../src/index.js";
-import { createMcpClient, closeMcpClient, listTools, callTool, TestMcpClient } from "./mcp-client.js";
+import { createMcpClient, closeMcpClient, listTools, callTool } from "./mcp-client.js";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { Server } from "http";
 import type { AddressInfo } from "net";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getServerUrl(apiService: any): string {
 	const address = (apiService.server as Server).address() as AddressInfo;
 	return `http://localhost:${address.port}/mcp`;
@@ -14,6 +15,7 @@ function getServerUrl(apiService: any): string {
 
 describe("Auto-discovery Integration Tests", () => {
 	let broker: ServiceBroker;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let apiService: any;
 
 	afterEach(async () => {
@@ -41,7 +43,11 @@ describe("Auto-discovery Integration Tests", () => {
 			broker.createService({
 				name: "weather",
 				actions: {
-					forecast: { handler() { return "sunny"; } }
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
 				}
 			});
 			await broker.start();
@@ -66,7 +72,11 @@ describe("Auto-discovery Integration Tests", () => {
 			broker.createService({
 				name: "weather",
 				actions: {
-					forecast: { handler() { return "sunny"; } }
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
 				}
 			});
 			await broker.start();
@@ -96,7 +106,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					forecast: {
 						description: "Get weather forecast for a city",
-						handler() { return "sunny"; }
+						handler() {
+							return "sunny";
+						}
 					}
 				}
 			});
@@ -123,7 +135,11 @@ describe("Auto-discovery Integration Tests", () => {
 			broker.createService({
 				name: "weather",
 				actions: {
-					forecast: { handler() { return "sunny"; } }
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
 				}
 			});
 			await broker.start();
@@ -156,7 +172,9 @@ describe("Auto-discovery Integration Tests", () => {
 							city: "string",
 							days: { type: "number", default: 3 }
 						},
-						handler(ctx) { return { city: ctx.params.city, days: ctx.params.days }; }
+						handler(ctx) {
+							return { city: ctx.params.city, days: ctx.params.days };
+						}
 					}
 				}
 			});
@@ -188,11 +206,23 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			broker.createService({
 				name: "math",
-				actions: { add: { handler() { return 0; } } }
+				actions: {
+					add: {
+						handler() {
+							return 0;
+						}
+					}
+				}
 			});
 			await broker.start();
 
@@ -216,11 +246,23 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "tools.weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			broker.createService({
 				name: "other",
-				actions: { doStuff: { handler() { return 0; } } }
+				actions: {
+					doStuff: {
+						handler() {
+							return 0;
+						}
+					}
+				}
 			});
 			await broker.start();
 
@@ -246,7 +288,13 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			await broker.start();
 
@@ -255,7 +303,9 @@ describe("Auto-discovery Integration Tests", () => {
 				const tools = await listTools(mcpClient);
 				const toolNames = tools.map((t: Tool) => t.name);
 				// $node.* internal actions should be filtered out
-				const nodeTools = toolNames.filter((name: string) => name.startsWith("$node") || name.startsWith("_node"));
+				const nodeTools = toolNames.filter(
+					(name: string) => name.startsWith("$node") || name.startsWith("_node")
+				);
 				expect(nodeTools).toHaveLength(0);
 				// Regular actions should still be present
 				expect(toolNames).toContain("weather_forecast");
@@ -275,7 +325,13 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			await broker.start();
 
@@ -303,8 +359,17 @@ describe("Auto-discovery Integration Tests", () => {
 			broker.createService({
 				name: "weather",
 				actions: {
-					forecast: { handler() { return "sunny"; } },
-					internal: { mcp: false, handler() { return "hidden"; } }
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					},
+					internal: {
+						mcp: false,
+						handler() {
+							return "hidden";
+						}
+					}
 				}
 			});
 			await broker.start();
@@ -332,7 +397,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					forecast: {
 						mcp: { name: "get_forecast" },
-						handler() { return "sunny"; }
+						handler() {
+							return "sunny";
+						}
 					}
 				}
 			});
@@ -362,7 +429,9 @@ describe("Auto-discovery Integration Tests", () => {
 					forecast: {
 						description: "Basic description",
 						mcp: { description: "MCP specific description" },
-						handler() { return "sunny"; }
+						handler() {
+							return "sunny";
+						}
 					}
 				}
 			});
@@ -390,7 +459,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					forecast: {
 						mcp: { annotations: { readOnlyHint: true } },
-						handler() { return "sunny"; }
+						handler() {
+							return "sunny";
+						}
 					}
 				}
 			});
@@ -421,7 +492,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					forecast: {
 						rest: "GET /forecast",
-						handler() { return "sunny"; }
+						handler() {
+							return "sunny";
+						}
 					}
 				}
 			});
@@ -451,7 +524,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					remove: {
 						rest: "DELETE /products/:id",
-						handler() { return "deleted"; }
+						handler() {
+							return "deleted";
+						}
 					}
 				}
 			});
@@ -504,7 +579,13 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			await broker.start();
 
@@ -540,7 +621,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					add: {
 						params: { a: "number", b: "number" },
-						handler(ctx) { return ctx.params.a + ctx.params.b; }
+						handler(ctx) {
+							return ctx.params.a + ctx.params.b;
+						}
 					}
 				}
 			});
@@ -569,7 +652,9 @@ describe("Auto-discovery Integration Tests", () => {
 				actions: {
 					forecast: {
 						params: { city: "string" },
-						handler() { throw new Error("Service unavailable"); }
+						handler() {
+							throw new Error("Service unavailable");
+						}
 					}
 				}
 			});
@@ -597,7 +682,13 @@ describe("Auto-discovery Integration Tests", () => {
 			});
 			broker.createService({
 				name: "weather",
-				actions: { forecast: { handler() { return "sunny"; } } }
+				actions: {
+					forecast: {
+						handler() {
+							return "sunny";
+						}
+					}
+				}
 			});
 			await broker.start();
 

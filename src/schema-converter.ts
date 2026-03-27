@@ -1,6 +1,10 @@
 import { z, ZodTypeAny } from "zod";
 
-function convertSingleField(def: Record<string, any>): ZodTypeAny {
+// fastest-validator schema definitions are inherently untyped
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ValidatorDef = Record<string, any>;
+
+function convertSingleField(def: ValidatorDef): ZodTypeAny {
 	const type = def.type;
 	let schema: ZodTypeAny;
 
@@ -50,7 +54,7 @@ function convertSingleField(def: Record<string, any>): ZodTypeAny {
 	return schema;
 }
 
-function buildString(def: Record<string, any>): ZodTypeAny {
+function buildString(def: ValidatorDef): ZodTypeAny {
 	let s = z.string();
 	if (def.min != null) s = s.min(def.min);
 	if (def.max != null) s = s.max(def.max);
@@ -66,7 +70,7 @@ function buildString(def: Record<string, any>): ZodTypeAny {
 	return s;
 }
 
-function buildNumber(def: Record<string, any>): ZodTypeAny {
+function buildNumber(def: ValidatorDef): ZodTypeAny {
 	let n = z.number();
 	if (def.min != null) n = n.min(def.min);
 	if (def.max != null) n = n.max(def.max);
@@ -76,12 +80,12 @@ function buildNumber(def: Record<string, any>): ZodTypeAny {
 	return n;
 }
 
-function buildArray(def: Record<string, any>): ZodTypeAny {
+function buildArray(def: ValidatorDef): ZodTypeAny {
 	const itemSchema = def.items ? parseFieldDef(def.items) : z.any();
 	return z.array(itemSchema);
 }
 
-function buildObject(def: Record<string, any>): ZodTypeAny {
+function buildObject(def: ValidatorDef): ZodTypeAny {
 	if (def.props) {
 		const shape: Record<string, ZodTypeAny> = {};
 		for (const [key, val] of Object.entries(def.props)) {
@@ -92,7 +96,7 @@ function buildObject(def: Record<string, any>): ZodTypeAny {
 	return z.object({});
 }
 
-function buildEnum(def: Record<string, any>): ZodTypeAny {
+function buildEnum(def: ValidatorDef): ZodTypeAny {
 	if (Array.isArray(def.values) && def.values.length > 0) {
 		const allStrings = def.values.every((v: unknown) => typeof v === "string");
 		if (allStrings) return z.enum(def.values as [string, ...string[]]);
@@ -102,10 +106,10 @@ function buildEnum(def: Record<string, any>): ZodTypeAny {
 	return z.any();
 }
 
-function parsePipeSyntax(pipe: string): Record<string, any> {
+function parsePipeSyntax(pipe: string): ValidatorDef {
 	const parts = pipe.split("|");
 	const type = parts[0];
-	const def: Record<string, any> = { type };
+	const def: ValidatorDef = { type };
 	for (let i = 1; i < parts.length; i++) {
 		const part = parts[i];
 		switch (part) {
@@ -136,7 +140,7 @@ function parsePipeSyntax(pipe: string): Record<string, any> {
 	return def;
 }
 
-function parseFieldDef(field: any): ZodTypeAny {
+function parseFieldDef(field: unknown): ZodTypeAny {
 	if (typeof field === "string") {
 		if (field.includes("|")) {
 			return convertSingleField(parsePipeSyntax(field));
@@ -144,12 +148,12 @@ function parseFieldDef(field: any): ZodTypeAny {
 		return convertSingleField({ type: field });
 	}
 	if (typeof field === "object" && field !== null) {
-		return convertSingleField(field);
+		return convertSingleField(field as ValidatorDef);
 	}
 	return z.any();
 }
 
-export function convertFastestValidatorToZod(schema: Record<string, any>): Record<string, ZodTypeAny> {
+export function convertFastestValidatorToZod(schema: ValidatorDef): Record<string, ZodTypeAny> {
 	if (schema.$$root === true) {
 		const rootDef = { ...schema };
 		delete rootDef.$$root;
@@ -164,13 +168,13 @@ export function convertFastestValidatorToZod(schema: Record<string, any>): Recor
 	return result;
 }
 
-export function convertActionParamsToZod(params: any): Record<string, ZodTypeAny> {
+export function convertActionParamsToZod(params: unknown): Record<string, ZodTypeAny> {
 	if (params == null) return {};
 	if (typeof params === "string") {
 		return convertFastestValidatorToZod({ $$root: true, type: params });
 	}
 	if (typeof params === "object") {
-		return convertFastestValidatorToZod(params);
+		return convertFastestValidatorToZod(params as ValidatorDef);
 	}
 	return {};
 }

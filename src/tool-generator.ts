@@ -10,27 +10,33 @@ interface ActionEntry {
 	name: string;
 	action?: {
 		description?: string;
-		params?: any;
-		rest?: any;
-		mcp?: boolean | {
-			enabled?: boolean;
-			name?: string;
-			description?: string;
-			annotations?: Record<string, boolean>;
-		};
-		[key: string]: any;
+		params?: unknown;
+		rest?: unknown;
+		mcp?:
+			| boolean
+			| {
+					enabled?: boolean;
+					name?: string;
+					description?: string;
+					annotations?: Record<string, boolean>;
+			  };
+		[key: string]: unknown;
 	};
 }
 
-function getRestMethod(rest: any): string | null {
+function getRestMethod(rest: unknown): string | null {
 	if (!rest) return null;
 	if (typeof rest === "string") {
 		const parts = rest.trim().split(/\s+/);
 		if (parts.length >= 2) return parts[0].toUpperCase();
 		return null;
 	}
-	if (typeof rest === "object" && !Array.isArray(rest) && rest.method) {
-		return rest.method.toUpperCase();
+	if (
+		typeof rest === "object" &&
+		!Array.isArray(rest) &&
+		(rest as Record<string, unknown>).method
+	) {
+		return ((rest as Record<string, unknown>).method as string).toUpperCase();
 	}
 	if (Array.isArray(rest) && rest.length > 0) {
 		return getRestMethod(rest[0]);
@@ -62,10 +68,7 @@ function detectAnnotations(restMethod: string | null): Record<string, boolean> {
 	return annotations;
 }
 
-function shouldIncludeAction(
-	actionEntry: ActionEntry,
-	options: McpServerMixinOptions
-): boolean {
+function shouldIncludeAction(actionEntry: ActionEntry, options: McpServerMixinOptions): boolean {
 	const actionName = actionEntry.name;
 	const serviceName = actionName.split(".").slice(0, -1).join(".");
 	const actionDef = actionEntry.action;
@@ -114,7 +117,7 @@ export function registerAutoDiscoveryTools(
 		const mcpMeta = typeof actionDef.mcp === "object" ? actionDef.mcp : {};
 
 		// Tool name
-		const toolName = mcpMeta.name || (prefix + actionName.replace(/\./g, "_"));
+		const toolName = mcpMeta.name || prefix + actionName.replace(/\./g, "_");
 
 		// Description
 		const description =
@@ -140,27 +143,29 @@ export function registerAutoDiscoveryTools(
 				inputSchema,
 				annotations
 			},
-			async (params: Record<string, any>) => {
+			async (params: Record<string, unknown>) => {
 				try {
 					const result = await broker.call(actionName, params);
 					return {
 						content: [
 							{
 								type: "text" as const,
-								text: result === undefined ? "null" : JSON.stringify(result, null, 2)
+								text:
+									result === undefined ? "null" : JSON.stringify(result, null, 2)
 							}
 						]
 					};
-				} catch (err: any) {
+				} catch (err: unknown) {
 					logger.error(`Error calling action ${actionName}:`, err);
-					const errorInfo = err instanceof Error
-						? { name: err.name, message: err.message, stack: err.stack }
-						: { message: String(err) };
+					const errorInfo =
+						err instanceof Error
+							? { name: err.name, message: err.message, stack: err.stack }
+							: { message: String(err) };
 					return {
 						content: [
 							{
 								type: "text" as const,
-								text: `Error ${errorInfo.name || "UnknownError"}: ${errorInfo.message}\n${JSON.stringify(errorInfo, null, 2)}`
+								text: `Error ${(errorInfo as { name?: string }).name || "UnknownError"}: ${errorInfo.message}\n${JSON.stringify(errorInfo, null, 2)}`
 							}
 						]
 					};
