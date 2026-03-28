@@ -71,6 +71,7 @@ const ProductsService: ServiceSchema<ProductSettings, DatabaseMethods> = {
 		 * Increase the quantity of the product item.
 		 */
 		increaseQuantity: {
+			description: "Increase the quantity of a product item",
 			rest: "PUT /:id/quantity/increase",
 			params: {
 				id: "string",
@@ -98,10 +99,14 @@ const ProductsService: ServiceSchema<ProductSettings, DatabaseMethods> = {
 		 * Decrease the quantity of the product item.
 		 */
 		decreaseQuantity: {
+			description: "Decrease the quantity of a product item",
 			rest: "PUT /:id/quantity/decrease",
 			params: {
 				id: "string",
 				value: "number|integer|positive"
+			},
+			mcp: {
+				annotations: { destructiveHint: true }
 			},
 			async handler(ctx: Context<ActionQuantityParams>): Promise<ProductEntity> {
 				// Get current quantity

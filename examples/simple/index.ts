@@ -26,21 +26,21 @@ broker.createService({
 	name: "greeter",
 	actions: {
 		hello: {
+			description: "Say hello from Moleculer",
 			rest: {
 				method: "GET",
 				path: "/hello"
+			},
+			mcp: {
+				annotations: { readOnlyHint: true }
 			},
 			async handler() {
 				return "Hello Moleculer";
 			}
 		},
 
-		/**
-		 * Welcome, a username
-		 *
-		 * @param {String} name - User name
-		 */
 		welcome: {
+			description: "Welcome a user by name",
 			rest: "POST /welcome",
 			params: {
 				name: "string"
