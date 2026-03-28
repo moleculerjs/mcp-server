@@ -48,7 +48,7 @@
 	"author": "MoleculerJS",
 	"license": "MIT",
 	"peerDependencies": {
-		"moleculer": "^0.14.12 || ^0.15.0-0"
+		"moleculer": "^0.15.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.28.0",
@@ -58,7 +58,7 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@modelcontextprotocol/inspector": "^0.21.1",
-		"@moleculer/database": "github:moleculerjs/database#next",
+		"@moleculer/database": "^0.4.0",
 		"@seald-io/nedb": "^4.1.2",
 		"@types/lodash": "^4.17.24",
 		"@types/node": "^25.5.0",
@@ -70,9 +70,9 @@
 		"eslint-plugin-promise": "^7.2.1",
 		"eslint-plugin-security": "^4.0.0",
 		"globals": "^17.4.0",
-		"moleculer": "github:moleculerjs/moleculer#next",
+		"moleculer": "^0.15.0",
 		"moleculer-repl": "^0.7.4",
-		"moleculer-web": "github:moleculerjs/moleculer-web#next",
+		"moleculer-web": "^0.11.0",
 		"nodemon": "^3.1.14",
 		"npm-check-updates": "^19.6.6",
 		"prettier": "^3.8.1",
