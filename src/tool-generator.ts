@@ -130,7 +130,7 @@ export function registerAutoDiscoveryTools(
 				description,
 				inputSchema,
 				annotations
-			},
+			} as any, // Zod 3.25 deep type inference issue with MCP SDK registerTool
 			async (params: Record<string, unknown>) => {
 				try {
 					const result = await broker.call(actionName, params);

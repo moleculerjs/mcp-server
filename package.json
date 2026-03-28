@@ -32,7 +32,7 @@
 		"lint:fix": "eslint --ext=.ts src examples test --fix",
 		"check": "tsc --noEmit true",
 		"prebuild": "rimraf dist",
-		"build": "tsc -b tsconfig.cjs.json tsconfig.esm.json tsconfig.types.json",
+		"build": "NODE_OPTIONS='--max-old-space-size=4096' tsc -b tsconfig.cjs.json tsconfig.esm.json tsconfig.types.json",
 		"postbuild": "echo {\"type\": \"commonjs\"} > dist/cjs/package.json && echo {\"type\": \"module\"} > dist/esm/package.json",
 		"prepack": "npm run build"
 	},

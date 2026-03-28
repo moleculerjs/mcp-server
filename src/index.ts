@@ -77,7 +77,7 @@ export function McpServerMixin(
 						idempotentHint: true,
 						openWorldHint: false
 					}
-				},
+				} as any,
 				async params => {
 					logger.info("Listing Moleculer nodes...", params);
 					const nodes = broker.registry.getNodeList(params);
@@ -135,7 +135,7 @@ export function McpServerMixin(
 						idempotentHint: true,
 						openWorldHint: false
 					}
-				},
+				} as any,
 				async params => {
 					logger.info("Listing Moleculer services...", params);
 					const services = broker.registry.getServiceList(params);
@@ -183,7 +183,7 @@ export function McpServerMixin(
 						idempotentHint: true,
 						openWorldHint: false
 					}
-				},
+				} as any,
 				async params => {
 					logger.info("Listing Moleculer actions...", params);
 					const actions = broker.registry.getActionList(params);
@@ -231,7 +231,7 @@ export function McpServerMixin(
 						idempotentHint: true,
 						openWorldHint: false
 					}
-				},
+				} as any,
 				async params => {
 					logger.info("Listing Moleculer events...", params);
 					const events = broker.registry.getEventList(params);
@@ -267,8 +267,8 @@ export function McpServerMixin(
 					idempotentHint: false,
 					openWorldHint: true
 				}
-			},
-			async params => {
+			} as any,
+			async (params: Record<string, any>) => {
 				logger.info("Calling Moleculer action...", params);
 				if (!params.action) {
 					throw new Error("action parameter is required");
@@ -337,8 +337,8 @@ export function McpServerMixin(
 					idempotentHint: false,
 					openWorldHint: true
 				}
-			},
-			async params => {
+			} as any,
+			async (params: Record<string, any>) => {
 				logger.info("Emitting Moleculer event...", params);
 				if (!params.event) {
 					throw new Error("event parameter is required");
