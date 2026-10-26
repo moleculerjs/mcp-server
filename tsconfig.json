@@ -1,23 +1,23 @@
 {
+	// Type check of the whole project (IDE and `npm run check`). The builds extend
+	// tsconfig.build.json, which compiles only `src`.
 	"compilerOptions": {
-		"allowJs": true,
-		"strict": false,
-		"checkJs": true,
+		"strict": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"lib": ["es2023"],
+		"lib": ["es2024"],
+		"types": ["node"],
 		"module": "node16",
 		"moduleResolution": "node16",
-		"target": "es2022",
+		"target": "es2023",
 
-		"declaration": false,
-		"outDir": "dist",
+		"noEmit": true,
+		"rootDir": ".",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"rewriteRelativeImportExtensions": true,
 		"isolatedModules": true,
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules", ".eslintrc.js", "prettier.config.js", "dist"],
+	"include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "vitest.config.ts"]
 }

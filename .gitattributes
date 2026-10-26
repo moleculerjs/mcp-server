@@ -1,0 +1,5 @@
+# Keep LF line endings in the working tree on every OS (prettier/eslint expect LF)
+* text=auto eol=lf
+
+*.mp4 binary
+*.png binary

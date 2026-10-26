@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { ServiceBroker } from "moleculer";
+import { Context, ServiceBroker } from "moleculer";
 import ApiGateway from "moleculer-web";
 import { McpServerMixin } from "../src/index.js";
+import { reservedToolNames } from "../src/tool-generator.js";
 import "../src/moleculer-types.js";
 import { createMcpClient, closeMcpClient, listTools, callTool } from "./mcp-client.js";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
@@ -189,8 +190,9 @@ describe("Auto-discovery Integration Tests", () => {
 				expect(tool!.inputSchema).toBeDefined();
 				expect(tool!.inputSchema.properties).toHaveProperty("city");
 				expect(tool!.inputSchema.properties).toHaveProperty("days");
-				expect(tool!.inputSchema.properties!.city.type).toBe("string");
-				expect(tool!.inputSchema.properties!.days.type).toBe("number");
+				const properties = tool!.inputSchema.properties as Record<string, { type: string }>;
+				expect(properties.city.type).toBe("string");
+				expect(properties.days.type).toBe("number");
 			} finally {
 				await closeMcpClient(mcpClient);
 			}
@@ -370,6 +372,12 @@ describe("Auto-discovery Integration Tests", () => {
 						handler() {
 							return "hidden";
 						}
+					},
+					disabled: {
+						mcp: { enabled: false, name: "disabled_tool" },
+						handler() {
+							return "hidden";
+						}
 					}
 				}
 			});
@@ -381,6 +389,15 @@ describe("Auto-discovery Integration Tests", () => {
 				const toolNames = tools.map((t: Tool) => t.name);
 				expect(toolNames).toContain("weather_forecast");
 				expect(toolNames).not.toContain("weather_internal");
+				// `mcp: { enabled: false }` excludes the action as `mcp: false` does
+				expect(toolNames).not.toContain("disabled_tool");
+				expect(toolNames).not.toContain("weather_disabled");
+
+				const call = await callTool(mcpClient, "moleculer_call_action", {
+					action: "weather.disabled"
+				});
+				expect(call.isError).toBe(true);
+				expect(call.content[0].text).toContain("is not exposed via MCP");
 			} finally {
 				await closeMcpClient(mcpClient);
 			}
@@ -701,6 +718,152 @@ describe("Auto-discovery Integration Tests", () => {
 				expect(toolNames).toContain("weather_forecast");
 				expect(toolNames).toContain("moleculer_call_action");
 				expect(toolNames).toContain("moleculer_emit_event");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+	});
+
+	describe("Fork fixes", () => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		async function startWith(actions: Record<string, any>) {
+			broker = createBroker();
+			apiService = broker.createService({
+				name: "api",
+				mixins: [ApiGateway, McpServerMixin()],
+				settings: { port: 0, routes: [] }
+			});
+			broker.createService({ name: "weather", actions });
+			await broker.start();
+			return createMcpClient(getServerUrl(apiService));
+		}
+
+		it("should expose only published actions", async () => {
+			const mcpClient = await startWith({
+				pub: { handler: () => "ok" },
+				explicit: { visibility: "published", handler: () => "ok" },
+				pub2: { visibility: "public", handler: () => "ok" },
+				prot: { visibility: "protected", handler: () => "ok" },
+				priv: { visibility: "private", handler: () => "ok" }
+			});
+			try {
+				const toolNames = (await listTools(mcpClient)).map((t: Tool) => t.name);
+				expect(toolNames).toContain("weather_pub");
+				expect(toolNames).toContain("weather_explicit");
+				expect(toolNames).not.toContain("weather_pub2");
+				expect(toolNames).not.toContain("weather_prot");
+				expect(toolNames).not.toContain("weather_priv");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should unwrap $$root params before calling the action", async () => {
+			const mcpClient = await startWith({
+				echo: {
+					params: { $$root: true, type: "array", items: "string" },
+					handler: (ctx: Context) => ctx.params
+				}
+			});
+			try {
+				const result = await callTool(mcpClient, "weather_echo", { $$root: ["a", "b"] });
+				expect(result.isError).toBeFalsy();
+				expect(JSON.parse(result.content[0].text as string)).toEqual(["a", "b"]);
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should flag action errors with isError and hide the stack trace", async () => {
+			const mcpClient = await startWith({
+				fail: {
+					handler() {
+						throw new Error("Service unavailable");
+					}
+				}
+			});
+			try {
+				const result = await callTool(mcpClient, "weather_fail", {});
+				expect(result.isError).toBe(true);
+				expect(result.content[0].text).toContain("Service unavailable");
+				expect(result.content[0].text).not.toContain("stack");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should skip duplicated tool names instead of breaking the session", async () => {
+			const mcpClient = await startWith({
+				first: { mcp: { name: "same_name" }, handler: () => "first" },
+				second: { mcp: { name: "same_name" }, handler: () => "second" },
+				clash: { mcp: { name: "moleculer_call_action" }, handler: () => "clash" },
+				other: { handler: () => "other" }
+			});
+			try {
+				const toolNames = (await listTools(mcpClient)).map((t: Tool) => t.name);
+				expect(toolNames.filter(n => n === "same_name")).toHaveLength(1);
+				expect(toolNames).toContain("weather_other");
+
+				const result = await callTool(mcpClient, "moleculer_call_action", {
+					action: "weather.other"
+				});
+				expect(result.content[0].text).toContain("other");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should reserve exactly the names of the tools registered before the actions", async () => {
+			const mcpClient = await startWith({});
+			try {
+				const toolNames = (await listTools(mcpClient)).map((t: Tool) => t.name);
+				expect(toolNames.sort()).toEqual(reservedToolNames({}).sort());
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should use mcp.title as tool title", async () => {
+			const mcpClient = await startWith({
+				forecast: { mcp: { title: "Weather forecast" }, handler: () => "sunny" }
+			});
+			try {
+				const tool = (await listTools(mcpClient)).find(
+					(t: Tool) => t.name === "weather_forecast"
+				);
+				expect(tool?.title).toBe("Weather forecast");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should use action.title as tool title", async () => {
+			const mcpClient = await startWith({
+				forecast: { title: "Weather forecast", handler: () => "sunny" }
+			});
+			try {
+				const tool = (await listTools(mcpClient)).find(
+					(t: Tool) => t.name === "weather_forecast"
+				);
+				expect(tool?.title).toBe("Weather forecast");
+			} finally {
+				await closeMcpClient(mcpClient);
+			}
+		});
+
+		it("should use mcp.title over action.title", async () => {
+			const mcpClient = await startWith({
+				forecast: {
+					title: "Basic title",
+					mcp: { title: "MCP specific title" },
+					handler: () => "sunny"
+				}
+			});
+			try {
+				const tool = (await listTools(mcpClient)).find(
+					(t: Tool) => t.name === "weather_forecast"
+				);
+				expect(tool?.title).toBe("MCP specific title");
 			} finally {
 				await closeMcpClient(mcpClient);
 			}

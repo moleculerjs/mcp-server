@@ -27,19 +27,27 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
-        adapter: ["Redis"]
+        node-version: [22.x, 24.x, 26.x]
+        moleculer: ["0.15", "0.14"]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Install Moleculer 0.14 and moleculer-web 0.10
+      if: matrix.moleculer == '0.14'
+      run: npm install --no-save moleculer@^0.14.36 moleculer-web@^0.10.8
+
+    # With Moleculer 0.14 only the library is checked: tests and examples use the 0.15 typings
+    - name: Type check
+      run: npm run ${{ matrix.moleculer == '0.14' && 'check:src' || 'check' }}
 
     - name: Run integration tests
       run: npm run test

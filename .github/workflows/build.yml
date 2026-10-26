@@ -25,16 +25,54 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        # The minimum supported Node version and the current LTS
+        node-version: [22.x, 24.x]
 
-    - name: Use Node.js 24.x
-      uses: actions/setup-node@v4
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v7
       with:
-        node-version: 24.x
+        node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
       run: npm ci
 
     - name: Build (CJS + ESM + types)
       run: npm run build
+
+    - name: Smoke test package entry points
+      run: |
+        node -e "require('@moleculer/mcp-server').McpServerMixin"
+        node --input-type=module -e "const m = await import('@moleculer/mcp-server'); m.McpServerMixin"
+
+  # As a project depending on a commit of the repository (`npm install git+https://...#<commit>`):
+  # npm installs the devDependencies and builds the package with the `prepare` script
+  git-install:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Use Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: 22.x
+
+    # npm clones the repository: the commit must be reachable from a branch (pull requests check out a detached merge commit)
+    - name: Branch of the commit
+      run: git branch git-install-check
+
+    - name: Install from git into a new project
+      working-directory: ${{ runner.temp }}
+      run: |
+        mkdir consumer && cd consumer
+        npm init -y
+        npm install moleculer moleculer-web "git+file://$GITHUB_WORKSPACE#$GITHUB_SHA"
+        node -e "require('@moleculer/mcp-server').McpServerMixin"
+        node --input-type=module -e "const m = await import('@moleculer/mcp-server'); m.McpServerMixin"

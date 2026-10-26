@@ -1,18 +1,11 @@
+/* eslint-disable @/no-console */
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-const mcp = new Client(
-	{
-		name: "test-client",
-		version: "0.1.0"
-	},
-	{
-		capabilities: {
-			sampling: {}
-		}
-	}
-);
+const mcp = new Client({
+	name: "example-client",
+	version: "0.1.0"
+});
 
 const transport = new StreamableHTTPClientTransport(new URL("http://localhost:3300/mcp"));
 
@@ -21,14 +14,11 @@ async function main() {
 	const { tools } = await mcp.listTools();
 	console.log("Tools:", tools);
 
-	const { resources } = await mcp.listResources();
-	console.log("Resources:", resources);
-
 	const res = await mcp.callTool({
-		name: "moleculer_list_actions",
-		parameters: {}
+		name: "greeter_welcome",
+		arguments: { name: "John" }
 	});
-	console.log("moleculer_list_actions result:", await res);
+	console.log("greeter_welcome result:", res.content);
 
 	await mcp.close();
 }
